@@ -1,0 +1,178 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Natural Voice Clone</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{
+ font-family:Arial,sans-serif;
+ background:#090d18;
+ color:#fff;
+ min-height:100vh;
+}
+header{
+ padding:20px;
+ border-bottom:1px solid #263047;
+ display:flex;
+ justify-content:space-between;
+ align-items:center;
+}
+.logo{font-size:21px;font-weight:bold;color:#60a5fa}
+main{max-width:850px;margin:35px auto;padding:18px}
+h1{font-size:30px;margin-bottom:12px}
+.sub{color:#9ca3af;margin-bottom:28px}
+.card{
+ background:#111a2c;
+ border:1px solid #263047;
+ border-radius:15px;
+ padding:22px;
+ margin-bottom:20px;
+}
+label{display:block;margin:18px 0 9px}
+textarea,select{
+ width:100%;
+ padding:14px;
+ background:#090f1e;
+ color:white;
+ border:1px solid #35435e;
+ border-radius:9px;
+ font-size:15px;
+}
+textarea{height:135px;resize:vertical}
+button{
+ background:#2563eb;
+ color:white;
+ border:0;
+ padding:14px 20px;
+ border-radius:9px;
+ font-size:15px;
+ cursor:pointer;
+ margin-top:18px;
+ width:100%;
+}
+button:hover{background:#1d4ed8}
+button:disabled{opacity:.5}
+.status{color:#60a5fa;margin-top:15px}
+small{color:#9ca3af;display:block;margin-top:10px}
+footer{text-align:center;color:#64748b;padding:30px}
+</style>
+</head>
+<body>
+<header>
+ <div class="logo">🎙 Natural Voice Clone</div>
+ <span>AI Studio</span>
+</header>
+
+<main>
+ <h1>AI Voice Studio</h1>
+ <p class="sub">Create natural sounding speech in multiple languages.</p>
+
+ <section class="card">
+  <h2>Text to Speech</h2>
+
+  <label for="language">Select Language</label>
+  <select id="language">
+   <option value="bn-BD">Bengali</option>
+   <option value="en-US">English</option>
+   <option value="hi-IN">Hindi</option>
+   <option value="ar-SA">Arabic</option>
+   <option value="es-ES">Spanish</option>
+   <option value="fr-FR">French</option>
+   <option value="de-DE">German</option>
+   <option value="it-IT">Italian</option>
+   <option value="ja-JP">Japanese</option>
+   <option value="zh-CN">Chinese</option>
+  </select>
+
+  <label for="voice">Select Voice</label>
+  <select id="voice">
+   <option value="default">Default Voice</option>
+  </select>
+
+  <label for="text">Enter Your Text</label>
+  <textarea id="text" placeholder="Type something here..."></textarea>
+
+  <label for="speed">Voice Speed</label>
+  <select id="speed">
+   <option value="0.8">Slow</option>
+   <option value="1" selected>Normal</option>
+   <option value="1.2">Fast</option>
+  </select>
+
+  <button id="generate">▶ Generate Voice</button>
+  <button id="stop" style="background:#374151">Stop Audio</button>
+
+  <p class="status" id="status">Ready to create voice.</p>
+  <small>This first demo uses your browser's built-in speech engine. AI voice cloning will be connected later.</small>
+ </section>
+
+ <section class="card">
+  <h2>Voice Cloning</h2>
+  <p style="color:#9ca3af;margin-top:12px">
+   Upload your own voice sample to prepare for consent-based voice cloning.
+  </p>
+  <label for="sample">Voice Sample</label>
+  <input id="sample" type="file" accept="audio/*">
+  <small>Only upload your own voice or a voice you have permission to use. AI cloning is not connected yet.</small>
+  <button disabled>Coming Soon</button>
+ </section>
+</main>
+
+<footer>
+ Natural Voice Clone © 2026
+</footer>
+
+<script>
+const language=document.getElementById("language");
+const voice=document.getElementById("voice");
+const status=document.getElementById("status");
+
+function loadVoices(){
+ const voices=speechSynthesis.getVoices();
+ voice.innerHTML='<option value="default">Default Voice</option>';
+ voices.forEach((v,i)=>{
+  const option=document.createElement("option");
+  option.value=i;
+  option.textContent=v.name+" ("+v.lang+")";
+  voice.appendChild(option);
+ });
+}
+loadVoices();
+speechSynthesis.onvoiceschanged=loadVoices;
+
+document.getElementById("generate").onclick=()=>{
+ const text=document.getElementById("text").value.trim();
+ if(!text){
+  status.textContent="Please enter some text.";
+  return;
+ }
+ if(!("speechSynthesis" in window)){
+  status.textContent="Speech engine is not supported.";
+  return;
+ }
+ speechSynthesis.cancel();
+ const speech=new SpeechSynthesisUtterance(text);
+ speech.lang=language.value;
+ speech.rate=Number(document.getElementById("speed").value);
+
+ const voices=speechSynthesis.getVoices();
+ const selected=voice.value;
+ if(selected!=="default" && voices[selected]){
+  speech.voice=voices[selected];
+ }
+ speech.onstart=()=>status.textContent="Playing audio...";
+ speech.onend=()=>status.textContent="Finished!";
+ speech.onerror=()=>status.textContent="Audio generation failed.";
+ speechSynthesis.speak(speech);
+};
+
+document.getElementById("stop").onclick=()=>{
+ speechSynthesis.cancel();
+ status.textContent="Audio stopped.";
+};
+</script>
+</body>
+</html>
